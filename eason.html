@@ -132,6 +132,7 @@
         google.charts.load('current', { packages: ['table'] });
 
         function showChart(category, category2, category3, agentName, agentDetails) {
+            document.getElementById('agents-container').style.display = 'grid';
             document.getElementById('home').style.display = 'none';
             // Update title
             document.getElementById('page-title').innerText = agentName + ' 資訊';
@@ -168,6 +169,7 @@
                     // Add click event to the button
                     agentButton.onclick = () => {
                         const container = document.getElementById('agents-container');
+                        container.style.display = 'block';
                         container.innerHTML = '';
 
                         // Display agent name (large title)
@@ -214,6 +216,7 @@
 
         // Return to homepage
         function showHomePage() {
+            document.getElementById('agents-container').style.display = 'grid';
             document.getElementById('home').style.display = 'block';
             document.getElementById('agents-container').innerHTML = '';
             document.getElementById('page-title').innerText = '特戰英豪特務資訊';
