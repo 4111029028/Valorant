@@ -47,30 +47,65 @@
 </head>
 <body>
     <header>
-        <h1>特務介紹</h1>
+        <h1 id="page-title">特戰英豪特務資訊</h1>
     </header>
     <nav>
-        <a href="#決鬥者">決鬥者</a>
-        <a href="#守衛">守衛</a>
-        <a href="#控場者">控場者</a>
-        <a href="#先鋒">先鋒</a>
+        <a href="#" onclick="loadPage('duelist')">決鬥者</a>
+        <a href="#" onclick="loadPage('controller')">控場者</a>
+        <a href="#" onclick="loadPage('initiator')">先鋒</a>
+        <a href="#" onclick="loadPage('sentinel')">守衛</a>
     </nav>
     <main>
+            <section id="content">
+            <h2 id="section-title">點擊上方的類型來瞭解每個特務的詳細資訊。</h2>
+            
+            </section>
         <section id="home">
-            <h2>Home</h2>
-            <p>This is the homepage of my website. Feel free to explore!</p>
+            <h2>決鬥者</h2>
+            <p>決鬥者專注於進攻，具有高單體爆發傷害能力</p>
+            <h2>控場者</h2>
+            <p>控場者擅長掌控地圖，利用煙霧和技能壓制敵方行動</p>
+            <h2>先鋒</h2>
+            <p>先鋒負責開啟戰鬥，擁有探索和破壞性技能</p>
+            <h2>守衛</h2>
+            <p>守衛擅長保護隊友和設置陷阱以擊退敵人</p>
         </section>
-        <section id="about">
-            <h2>About</h2>
-            <p>This website is a simple HTML structure to get started with web design.</p>
-        </section>
-        <section id="contact">
-            <h2>Contact</h2>
-            <p>Contact me at <a href="mailto:example@example.com">example@example.com</a>.</p>
-        </section>
+
+        
     </main>
     <footer>
-        <p>&copy; 2025 My Website. All rights reserved.</p>
+        <p>&copy; 宇策大帥哥呈現</p>
     </footer>
+    <script>
+        // 定義每個特務的內容
+        const pages = {
+            duelist: {
+                title: "決鬥者",
+                description: "決鬥者專注於進攻，具有高單體爆發傷害能力。"
+            },
+            controller: {
+                title: "控場者",
+                description: "控場者擅長掌控地圖，利用煙霧和技能壓制敵方行動。"
+            },
+            initiator: {
+                title: "先鋒",
+                description: "先鋒負責開啟戰鬥，擁有探索和破壞性技能。"
+            },
+            sentinel: {
+                title: "守衛",
+                description: "守衛擅長保護隊友和設置陷阱以擊退敵人。"
+            }
+        };
+
+        // 切換頁面內容
+        function loadPage(page) {
+            const pageData = pages[page];
+            if (pageData) {
+                document.getElementById("page-title").textContent = pageData.title;
+                document.getElementById("section-title").textContent = pageData.title;
+                document.getElementById("home").textContent = pageData.description;
+            }
+        }
+    </script>
 </body>
 </html>
