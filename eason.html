@@ -38,10 +38,60 @@
             background: #333;
             color: #fff;
             text-align: center;
-            padding: 1em 0;
+            padding: 0.5vh, 0;
             position: fixed;
             bottom: 0;
             width: 100%;
+        }
+        /* Container for agent divs - set up a grid layout */
+        #agents-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));  /* Creates responsive columns */
+            grid-gap: 20px;  /* Space between items */
+            margin-top: 20px;
+        }
+
+        /* Styling for each agent div */
+        .agent-div {
+            background-color: #fff;
+            padding: 1em;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Styling for agent name */
+        .agent-div h1 {
+            font-size: 1.5em;
+            margin: 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Agent detail layout */
+        #agent-details {
+            display: flex;
+            align-items: center; /* Vertically align content */
+            margin-top: 1em;
+            justify-content: center; /* Center the content */
+        }
+
+        /* Styling for the agent image */
+        #agent-details img {
+            max-width: 200px;
+            margin-right: 20px; /* Space between image and text */
+        }
+
+        /* Styling for the agent description */
+        #agent-description {
+            font-size: 1.2em; /* Larger font size for description */
+            text-align: left;
+            max-width: 600px;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -50,16 +100,16 @@
         <h1 id="page-title">特戰英豪特務資訊</h1>
     </header>
     <nav>
-        <a href="#" onclick="loadPage('duelist')">決鬥者</a>
-        <a href="#" onclick="loadPage('controller')">控場者</a>
-        <a href="#" onclick="loadPage('initiator')">先鋒</a>
-        <a href="#" onclick="loadPage('sentinel')">守衛</a>
+        <a href="#" onclick="showHomePage()">主頁</a>
+        <a href="#" onclick="showChart('A','E','I','決鬥者', '決鬥者的詳細資訊')">決鬥者</a>
+        <a href="#" onclick="showChart('B','F','J','控場者', '控場者的詳細資訊')">控場者</a>
+        <a href="#" onclick="showChart('C','G','K', '先鋒', '先鋒的詳細資訊')">先鋒</a>
+        <a href="#" onclick="showChart('D','H','L', '守衛', '守衛的詳細資訊')">守衛</a>
     </nav>
     <main>
-            <section id="content">
+        <section id="content">
             <h2 id="section-title">點擊上方的類型來瞭解每個特務的詳細資訊。</h2>
-            
-            </section>
+        </section>
         <section id="home">
             <h2>決鬥者</h2>
             <p>決鬥者專注於進攻，具有高單體爆發傷害能力</p>
@@ -70,41 +120,103 @@
             <h2>守衛</h2>
             <p>守衛擅長保護隊友和設置陷阱以擊退敵人</p>
         </section>
-
-        
+        <div id="chart-container" style="width: 100%; height: auto;" hidden="true"></div>
+        <div id="agents-container"></div>
     </main>
     <footer>
         <p>&copy; 宇策大帥哥呈現</p>
     </footer>
-    <script>
-        // 定義每個特務的內容
-        const pages = {
-            duelist: {
-                title: "決鬥者",
-                description: "決鬥者專注於進攻，具有高單體爆發傷害能力。"
-            },
-            controller: {
-                title: "控場者",
-                description: "控場者擅長掌控地圖，利用煙霧和技能壓制敵方行動。"
-            },
-            initiator: {
-                title: "先鋒",
-                description: "先鋒負責開啟戰鬥，擁有探索和破壞性技能。"
-            },
-            sentinel: {
-                title: "守衛",
-                description: "守衛擅長保護隊友和設置陷阱以擊退敵人。"
-            }
-        };
 
-        // 切換頁面內容
-        function loadPage(page) {
-            const pageData = pages[page];
-            if (pageData) {
-                document.getElementById("page-title").textContent = pageData.title;
-                document.getElementById("section-title").textContent = pageData.title;
-                document.getElementById("home").textContent = pageData.description;
-            }
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        google.charts.load('current', { packages: ['table'] });
+
+        function showChart(category, category2, category3, agentName, agentDetails) {
+            document.getElementById('home').style.display = 'none';
+            // Update title
+            document.getElementById('page-title').innerText = agentName + ' 資訊';
+            document.getElementById('agents-container').innerHTML = `<p>${agentDetails}</p>`;
+
+            const queryString = encodeURIComponent(`SELECT ${category},${category2},${category3}`);
+            const sheetURL = 'https://docs.google.com/spreadsheets/d/1CxK_mflZMXi7kjS3e_gBxrsKDiKAmyMnoc8v6JtQThA/gviz/tq?tq=' + queryString;
+
+            const query = new google.visualization.Query(sheetURL);
+            query.send(response => {
+                if (response.isError()) {
+                    alert('Error fetching data: ' + response.getMessage());
+                    return;
+                }
+
+                const data = response.getDataTable();
+                document.getElementById('agents-container').innerHTML = '';
+
+                // Dynamic add <div> in grid
+                for (let i = 0; i < data.getNumberOfRows(); i++) {
+                    const agentName = data.getValue(i, 0); // 角色名稱
+                    const agentImageUrl = data.getValue(i, 1); // 圖片連結
+                    const agentDescription = data.getValue(i, 2); // 描述文字
+
+                    if (!agentName || agentName.trim() === "") {
+                        continue;
+                    }
+
+                    // Create button element
+                    const agentButton = document.createElement('button');
+                    agentButton.classList.add('agent-div');
+                    agentButton.textContent = agentName;
+
+                    // Add click event to the button
+                    agentButton.onclick = () => {
+                        const container = document.getElementById('agents-container');
+                        container.innerHTML = '';
+
+                        // Display agent name (large title)
+                        const nameHeading = document.createElement('h1');
+                        nameHeading.textContent = agentName;
+                        nameHeading.style.textAlign = 'center';
+                        nameHeading.style.marginTop = '1em';
+                        container.appendChild(nameHeading);
+
+                        // Create container for image and description, using flex layout
+                        const agentDetails = document.createElement('div');
+                        agentDetails.id = 'agent-details';
+
+                        // Display agent image
+                        if (agentImageUrl) {
+                            const image = document.createElement('img');
+                            image.src = agentImageUrl;
+                            image.alt = `${agentName} 的圖片`;
+                            agentDetails.appendChild(image);
+                        }
+
+                        // Display agent description
+                        const description = document.createElement('p');
+                        description.id = 'agent-description';
+                        description.textContent = agentDescription || '無敘述';
+                        agentDetails.appendChild(description);
+
+                        // Append the image and description container to the display area
+                        container.appendChild(agentDetails);
+                    };
+
+                    // Add button to the page
+                    document.getElementById('agents-container').appendChild(agentButton);
+                }
+
+                const table = new google.visualization.Table(document.getElementById('chart-container'));
+                table.draw(data, {
+                    showRowNumber: false,
+                    width: '100%',
+                    height: '100%'
+                });
+            });
+        }
+
+        // Return to homepage
+        function showHomePage() {
+            document.getElementById('home').style.display = 'block';
+            document.getElementById('agents-container').innerHTML = '';
+            document.getElementById('page-title').innerText = '特戰英豪特務資訊';
         }
     </script>
 </body>
