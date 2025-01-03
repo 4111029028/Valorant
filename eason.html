@@ -12,15 +12,15 @@
             background-color: #f4f4f4;
         }
         header {
-            background: #333;
+            background: #1f1e1e;
             color: #fff;
             padding: 1em 0;
             text-align: center;
         }
         nav {
-            background: #555;
+            background: #e05050;
             color: #fff;
-            padding: 0.5em 0;
+            padding: 1em 0;
             text-align: center;
         }
         nav a {
@@ -33,9 +33,11 @@
         }
         main {
             padding: 2em;
+            background: #fff;
+
         }
         footer {
-            background: #333;
+            background: #1f1e1e;
             color: #fff;
             text-align: center;
             padding: 0.5vh, 0;
@@ -72,6 +74,10 @@
             font-weight: bold;
         }
 
+        #section-title {
+            padding:0;
+            font-size: 1.5em;
+        }
         /* Agent detail layout */
         #agent-details {
             display: flex;
@@ -82,8 +88,9 @@
 
         /* Styling for the agent image */
         #agent-details img {
-            max-width: 200px;
+            max-width: 350px; /* Increased maximum width for agent images */
             margin-right: 20px; /* Space between image and text */
+            border-radius: 5px; /* Optional: Add rounded corners to the image */
         }
 
         /* Styling for the agent description */
@@ -93,6 +100,29 @@
             max-width: 600px;
             line-height: 1.5;
         }
+
+        p {
+            font-size: 20px; /* 設定全局段落字體大小 */
+            line-height: 2; /* 增加行高以改善可讀性 */
+            margin: 10px 0; /* 縮小段落的上下間距 */
+        }
+        h2 {
+            font-size: 30px; 
+            margin: 30px 0; /* 縮小標題的上下間距 */
+        }
+
+
+        .agent-div {
+            font-size: 20px;
+            background-color: #e05050;
+            color: #fff;
+            display: flex;
+            justify-content: center; /* 横向居中 */
+            align-items: center; /* 纵向居中 */
+            height: 100px; /* 每个格子的高度 */
+        }
+
+        
     </style>
 </head>
 <body>
@@ -106,11 +136,12 @@
         <a href="#" onclick="showChart('C','G','K', '先鋒', '先鋒的詳細資訊')">先鋒</a>
         <a href="#" onclick="showChart('D','H','L', '守衛', '守衛的詳細資訊')">守衛</a>
     </nav>
+
     <main>
         <section id="content">
-            <h2 id="section-title">點擊上方的類型來瞭解每個特務的詳細資訊。</h2>
+            <h1 id="section-title">點擊上方的類型來瞭解每個特務的詳細資訊。</h1>
         </section>
-        <section id="home">
+        <section id="home" style="text-align: center;">
             <h2>決鬥者</h2>
             <p>決鬥者專注於進攻，具有高單體爆發傷害能力</p>
             <h2>控場者</h2>
@@ -123,8 +154,9 @@
         <div id="chart-container" style="width: 100%; height: auto;" hidden="true"></div>
         <div id="agents-container"></div>
     </main>
+    
     <footer>
-        <p>&copy; 宇策大帥哥呈現</p>
+        <p>&copy;4111029028</p>
     </footer>
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -134,8 +166,8 @@
         function showChart(category, category2, category3, agentName, agentDetails) {
             document.getElementById('agents-container').style.display = 'grid';
             document.getElementById('home').style.display = 'none';
-            // Update title
-            document.getElementById('page-title').innerText = agentName + ' 資訊';
+            
+            document.getElementById('page-title').innerText = agentName ;
             document.getElementById('agents-container').innerHTML = `<p>${agentDetails}</p>`;
 
             const queryString = encodeURIComponent(`SELECT ${category},${category2},${category3}`);
