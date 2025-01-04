@@ -33,7 +33,7 @@
         }
         main {
             padding: 2em;
-            background: #fff;
+            background: #f8f8f8;
 
         }
         footer {
@@ -81,17 +81,26 @@
         /* Agent detail layout */
         #agent-details {
             display: flex;
+            flex-direction: row;
             align-items: center; /* Vertically align content */
             margin-top: 1em;
-            justify-content: center; /* Center the content */
+            justify-content:center; /* Center the content */
         }
 
         /* Styling for the agent image */
         #agent-details img {
-            max-width: 350px; /* Increased maximum width for agent images */
-            margin-right: 20px; /* Space between image and text */
-            border-radius: 5px; /* Optional: Add rounded corners to the image */
+            width: 350px; /* 設定圖片寬度 */
+            height: 350px; /* 自動調整高度以保持比例 */
+            margin-right: 20px; /* 與文字的間距 */
+            border-radius: 5px; /* 選填：設置圓角 */
         }
+
+        #nextbutton {
+            position:fixed;
+        }
+
+
+
 
         /* Styling for the agent description */
         #agent-description {
@@ -122,6 +131,16 @@
             height: 100px; /* 每个格子的高度 */
         }
 
+        .nextpage {
+            font-size: 15px;
+            background-color: #e05050;
+            color: #fff;
+            display: flex;
+            justify-content: center; /* 横向居中 */
+            align-items: center; /* 纵向居中 */
+            height: 50px; /* 每个格子的高度 */
+        }
+
         
     </style>
 </head>
@@ -131,10 +150,10 @@
     </header>
     <nav>
         <a href="#" onclick="showHomePage()">主頁</a>
-        <a href="#" onclick="showChart('A','E','I','決鬥者', '決鬥者的詳細資訊')">決鬥者</a>
-        <a href="#" onclick="showChart('B','F','J','控場者', '控場者的詳細資訊')">控場者</a>
-        <a href="#" onclick="showChart('C','G','K', '先鋒', '先鋒的詳細資訊')">先鋒</a>
-        <a href="#" onclick="showChart('D','H','L', '守衛', '守衛的詳細資訊')">守衛</a>
+        <a href="#" onclick="showChart('A','E','I','M','Q','決鬥者', '決鬥者的詳細資訊')">決鬥者</a>
+        <a href="#" onclick="showChart('B','F','J','N','R','控場者', '控場者的詳細資訊')">控場者</a>
+        <a href="#" onclick="showChart('C','G','K','O','S', '先鋒', '先鋒的詳細資訊')">先鋒</a>
+        <a href="#" onclick="showChart('D','H','L','P','T', '守衛', '守衛的詳細資訊')">守衛</a>
     </nav>
 
     <main>
@@ -163,14 +182,14 @@
     <script>
         google.charts.load('current', { packages: ['table'] });
 
-        function showChart(category, category2, category3, agentName, agentDetails) {
+        function showChart(category, category2, category3, category4, category5, agentName, agentDetails) {
             document.getElementById('agents-container').style.display = 'grid';
             document.getElementById('home').style.display = 'none';
             
             document.getElementById('page-title').innerText = agentName ;
             document.getElementById('agents-container').innerHTML = `<p>${agentDetails}</p>`;
 
-            const queryString = encodeURIComponent(`SELECT ${category},${category2},${category3}`);
+            const queryString = encodeURIComponent(`SELECT ${category},${category2},${category3},${category4},${category5}`);
             const sheetURL = 'https://docs.google.com/spreadsheets/d/1CxK_mflZMXi7kjS3e_gBxrsKDiKAmyMnoc8v6JtQThA/gviz/tq?tq=' + queryString;
 
             const query = new google.visualization.Query(sheetURL);
@@ -184,9 +203,13 @@
                 document.getElementById('agents-container').innerHTML = '';
 
                 // Dynamic add <div> in grid
-                for (let i = 0; i < data.getNumberOfRows(); i++) {
+                    for (let i = 0; i < data.getNumberOfRows(); i++) {
                     const agentName = data.getValue(i, 0); // 角色名稱
-                    const agentImageUrl = data.getValue(i, 1); // 圖片連結
+                    const agentImageUrls = [
+                        data.getValue(i, 1), // 第一張圖片
+                        data.getValue(i, 3), // 第二張圖片
+                        data.getValue(i, 4)  // 第三張圖片
+                    ];
                     const agentDescription = data.getValue(i, 2); // 描述文字
 
                     if (!agentName || agentName.trim() === "") {
@@ -214,22 +237,48 @@
                         // Create container for image and description, using flex layout
                         const agentDetails = document.createElement('div');
                         agentDetails.id = 'agent-details';
+                        
+                        const A = document.createElement('div');
+                        A.id = 'img+nextpage';
 
-                        // Display agent image
-                        if (agentImageUrl) {
-                            const image = document.createElement('img');
-                            image.src = agentImageUrl;
+                        const B = document.createElement('div');
+                        B.id = 'detail';
+
+
+                        // Display agent image and navigation buttons
+                        const image = document.createElement('img');
+                        let currentImageIndex = 0;
+
+                        function updateImage() {
+                            image.src = agentImageUrls[currentImageIndex];
                             image.alt = `${agentName} 的圖片`;
-                            agentDetails.appendChild(image);
+                            image.style.width = '352px'; // 設定圖片寬度
+                            image.style.height = '470px'; // 保持圖片比例
                         }
+                        
+
+                        updateImage();
+                        A.appendChild(image);
+
+                        
+                        const nextButton = document.createElement('button');
+                        nextButton.classList.add('nextpage');
+                        nextButton.textContent = '下一張';
+                        nextButton.onclick = () => {
+                            currentImageIndex = (currentImageIndex + 1) % agentImageUrls.length;
+                            updateImage();
+                        };
+                        nextButton.id = 'nextbutton'
 
                         // Display agent description
                         const description = document.createElement('p');
                         description.id = 'agent-description';
                         description.textContent = agentDescription || '無敘述';
-                        agentDetails.appendChild(description);
-
-                        // Append the image and description container to the display area
+                        B.appendChild(description);
+                        
+                        A.appendChild(nextButton);
+                        agentDetails.appendChild(A);
+                        agentDetails.appendChild(B);
                         container.appendChild(agentDetails);
                     };
 
