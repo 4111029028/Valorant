@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="style.css">
+    <style>
+      .card {
+        margin: 15px auto; /* 卡片水平置中 */
+        max-width: 300px; /* 限制卡片寬度 */
+        width: 100%;
+      }
+      .card-image {
+        position: relative;
+      }
+      .card-image img {
+        width: 100%;
+        height: 350px; /* 確保圖片完整顯示 */
+        object-fit: cover;
+      }
+      .image-navigation {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+      }
+      .image-navigation .material-icons {
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border-radius: 50%;
+        pointer-events: auto;
+        cursor: pointer;
+        padding: 5px;
+        font-size: 24px;
+      }
+      .hidden {
+        display: none;
+      }
+      .show-more-link {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        margin-top: 20px;
+      }
+      .show-more-link button {
+        display: block;
+        margin: 0 auto;
+        padding: 10px 20px;
+        background-color: #1565c0;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .show-more-link button:hover {
+        background-color: #0d47a1;
+      }
+      .multi-card-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: stretch;
+      }
+      .card-container {
+        flex: 0 0 16.666%;
+        max-width: 16.666%;
+        box-sizing: border-box;
+      }
+      .single-card {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: calc(100vh - 60px); /* 減去header和footer的高度，確保居中 */
+      }
+      .single-card .card {
+        margin: 0; /* 單一卡片居中顯示時取消多餘的間距 */
+      }
+      .filter-buttons {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      .filter-buttons button {
+        margin: 0 10px;
+        padding: 10px 20px;
+        background-color: #1565c0;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .filter-buttons button:hover {
+        background-color: #0d47a1;
+      }
+    </style>
+    <script>
+      google.charts.load('current', {'packages': ['corechart']});
+      google.charts.setOnLoadCallback(init);
+
+      let globalData;
+      let imageIndex = 0;
+      let imageInterval;
+
+      function init() {
+        const sheetId = '1CxK_mflZMXi7kjS3e_gBxrsKDiKAmyMnoc8v6JtQThA';
+        const sheetName = '工作表1';
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`;
+
+        const query = new google.visualization.Query(url);
+        query.setQuery('SELECT A, B, C, D, E, F, G');
+        query.send(processSheetsData);
+      }
+
+      function processSheetsData(response) {
+        if (response.isError()) {
+          console.error('Error fetching data: ' + response.getMessage());
+          document.getElementById('demo').innerHTML = '<p>資料載入失敗，請稍後再試。</p>';
+          return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const idParam = urlParams.get('id');
+        globalData = response.getDataTable();
+        const totalRows = globalData.getNumberOfRows();
+
+        if (idParam !== null) {
+          const id = parseInt(idParam, 10);
+          if (id >= 0 && id < totalRows) {
+            document.getElementById('demo').classList.remove('multi-card-row');
+            renderSingleCardView(globalData, id);
+            return;
+          }
+        }
+
+        document.getElementById('demo').classList.add('multi-card-row');
+        renderFilterButtons();
+        renderCardView(globalData, totalRows);
+      }
+
+      function renderFilterButtons() {
+        const filters = ['全部', '決鬥者', '控場者', '先鋒', '守衛'];
+        let buttonsHtml = '';
+        filters.forEach(filter => {
+          buttonsHtml += `<button onclick="filterCards('${filter}')">${filter}</button>`;
+        });
+        document.getElementById('filterButtons').innerHTML = buttonsHtml;
+      }
+
+      function filterCards(type) {
+        const totalRows = globalData.getNumberOfRows();
+        let htmlContent = '';
+        let visibleCount = 0;
+        const maxVisibleCards = 5;
+
+        for (let i = 1; i < totalRows; i++) {
+          const name = globalData.getValue(i, 0);
+          const classes = globalData.getValue(i, 1);
+          const imageUrl = globalData.getValue(i, 3);
+
+          if (type !== '全部' && classes !== type) continue;
+
+          const infoLink = `?id=${i}`;
+          const hiddenClass = visibleCount >= maxVisibleCards ? 'hidden' : '';
+          htmlContent += `
+            <div class="card-container ${hiddenClass}">
+              <div class="card">
+                <div class="card-image">
+                  <img src="${imageUrl}" alt="${name}">
+                </div>
+                <div class="card-content">
+                  <span class="card-title">${name}</span>
+                  <p>${classes}</p>
+                </div>
+                <div class="card-action">
+                  <a href="${infoLink}">介紹</a>
+                </div>
+              </div>
+            </div>
+          `;
+          visibleCount++;
+        }
+
+        if (visibleCount > maxVisibleCards) {
+          htmlContent += `
+            <div class="col s12 show-more-link" id="showMoreLink">
+              <button>展開更多</button>
+            </div>
+          `;
+        }
+
+        document.getElementById('demo').innerHTML = htmlContent;
+
+        const showMoreLink = document.getElementById('showMoreLink');
+        if (showMoreLink) {
+          showMoreLink.addEventListener('click', function () {
+            document.querySelectorAll('.card-container.hidden').forEach(card => {
+              card.classList.remove('hidden');
+            });
+            showMoreLink.style.display = 'none';
+          });
+        }
+      }
+
+      function renderCardView(data, totalRows) {
+        filterCards('全部');
+      }
+
+      function renderSingleCardView(data, id) {
+        const name = data.getValue(id, 0);
+        const classes = data.getValue(id, 1);
+        const description = data.getValue(id, 2);
+        const images = [data.getValue(id, 3), data.getValue(id, 4), data.getValue(id, 5)];
+        const infoLink = data.getValue(id, 6);
+
+        const singleCardHtml = `
+          <div class="single-card">
+            <div class="card">
+              <div class="card-image">
+                <img id="rotating-image" src="${images[0]}" alt="${name}">
+                <div class="image-navigation">
+                  <span class="material-icons" onclick="changeImage('${images}', -1)">chevron_left</span>
+                  <span class="material-icons" onclick="changeImage('${images}', 1)">chevron_right</span>
+                </div>
+              </div>
+              <div class="card-content">
+                <span class="card-title">${name}</span>
+                <p>${classes}</p>
+                <p>${description}</p>
+              </div>
+              <div class="card-action">
+                <a href="${infoLink}" target="_blank">更多資訊</a>
+                <br><br>
+                <a href="introduce.html">返回</a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('demo').innerHTML = singleCardHtml;
+        startImageRotation(images);
+      }
+
+      function startImageRotation(images) {
+        clearInterval(imageInterval);
+        imageInterval = setInterval(() => {
+          changeImage(images, 1);
+        }, 3000);
+      }
+
+      function changeImage(images, direction) {
+        const imageArray = images.split(',');
+        imageIndex = (imageIndex + direction + imageArray.length) % imageArray.length;
+        document.getElementById('rotating-image').src = imageArray[imageIndex].trim();
+        startImageRotation(images); // Reset timer on manual change
+      }
+    </script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <script src="header.js"></script>
+    <div id="filterButtons" class="filter-buttons"></div>
+    <div id="demo">
+      <p>資料加載中，請稍候...</p>
+    </div>
+    <div id="footer"></div>
+    <script src="footer.js"></script>
+  </body>
+</html>

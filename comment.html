@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="style.css">
+    <style>
+      .footer-form {
+        background-color: #f4f4f4;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .footer-form h5 {
+        margin-bottom: 20px;
+      }
+      .footer-form .input-field {
+        margin-bottom: 15px;
+      }
+      .footer-form button {
+        margin-top: 10px;
+      }
+      .voter {
+        margin-bottom: 15px;
+      }
+      .comments-section {
+        margin-top: 30px;
+      }
+      .comments-section h5 {
+        margin-bottom: 20px;
+      }
+      .comment {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .comment .name {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .comment .timestamp {
+        font-size: 0.8em;
+        color: gray;
+        margin-bottom: 5px;
+      }
+    </style>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <script src="header.js"></script>
+    <div class="container">
+      <h3>留言板</h3>
+      <p>歡迎您寫下想說的話</p>
+    </div>
+    <div class="voter">
+      <div class="container">
+        <div class="footer-form">
+          <form id="trainerForm" method="POST" action="https://docs.google.com/forms/d/e/1FAIpQLSe-bKgbUjU0q_FcAY1zEKLoA86KDGTToiwBYYAQpVmgryrCEg/formResponse" target="_blank">
+            <div class="input-field">
+              <input id="trainer_name" name="entry.808539207" type="text" required>
+              <label for="trainer_name">名字</label>
+            </div>
+            <div class="input-field">
+              <input id="comment" name="entry.1950144097" type="text" required>
+              <label for="comment">想說的話</label>
+            </div>
+            <button class="btn waves-effect waves-light" type="submit">
+              提交 <i class="material-icons right">send</i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="comments-section container">
+      <h5>最新留言</h5>
+      <div id="comments"></div>
+    </div>
+    <div id="footer"></div>
+    <script src="footer.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const elems = document.querySelectorAll('select');
+        M.FormSelect.init(elems);
+      });
+
+      document.getElementById('trainerForm').onsubmit = function () {
+        alert('感謝您的提交！');
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      };
+
+      function processSheetsData(response) {
+        if (response.isError()) {
+          console.error('Error fetching data: ' + response.getMessage());
+          const commentsContainer = document.getElementById('comments');
+          commentsContainer.innerHTML = '<p>資料載入失敗，請稍後再試。</p>';
+          return;
+        }
+
+        const data = response.getDataTable();
+        const commentsContainer = document.getElementById('comments');
+        commentsContainer.innerHTML = '';
+
+        for (let i = 0; i < data.getNumberOfRows(); i++) {
+          const timestamp = data.getValue(i, 0); // 假設時間戳記在第一欄
+          const name = data.getValue(i, 1); // 假設名字在第二欄
+          const comment = data.getValue(i, 2); // 假設留言內容在第三欄
+
+          const commentElement = document.createElement('div');
+          commentElement.classList.add('comment');
+
+          const timestampElement = document.createElement('div');
+          timestampElement.classList.add('timestamp');
+          timestampElement.textContent = `時間: ${timestamp}`;
+
+          const nameElement = document.createElement('div');
+          nameElement.classList.add('name');
+          nameElement.textContent = name;
+
+          const contentElement = document.createElement('div');
+          contentElement.textContent = comment;
+
+          commentElement.appendChild(timestampElement);
+          commentElement.appendChild(nameElement);
+          commentElement.appendChild(contentElement);
+          commentsContainer.appendChild(commentElement);
+        }
+      }
+
+      function init() {
+        const sheetId = '1FPPod9i7jeEAYB3Ig4v0gv1NEE3VJ8uh2NzIN7hAuWk';
+        const sheetName = '表單回應1';
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`;
+
+        const query = new google.visualization.Query(url);
+        query.setQuery('SELECT A, B, C'); // 根據需要調整 SELECT 的列
+        query.send(processSheetsData);
+      }
+
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(init);
+    </script>
+  </body>
+</html>
